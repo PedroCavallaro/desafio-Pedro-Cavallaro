@@ -19,7 +19,7 @@ class CaixaDaLanchonete {
         try {
             if (!metodoDePagamento)
                 throw new Error("Método de pagamento necessário");
-            if (!(metodoDePagamento in this.getPaymentMethods()))
+            if (!(metodoDePagamento in this.PaymentMethods))
                 throw new Error("Forma de pagamento inválida!");
             if (!itens.length)
                 throw new Error("Não há itens no carrinho de compra!");
@@ -29,14 +29,12 @@ class CaixaDaLanchonete {
                 const qtd = Number(item.split(",")[1]);
                 const codItem = item.split(",")[0];
 
-                const retrievedItem = this.getItens().find(
-                    (e) => e.cod === codItem
-                );
+                const retrievedItem = this.Itens.find((e) => e.cod === codItem);
 
                 if (qtd === 0) throw new Error("Quantidade inválida!");
                 if (!retrievedItem) throw new Error("Item inválido!");
 
-                totalValue += qtd * Number(retrievedItem?.value);
+                totalValue += qtd * Number(retrievedItem.value);
 
                 return { ...retrievedItem, qtd };
             });
@@ -60,18 +58,18 @@ class CaixaDaLanchonete {
             return err.message;
         }
     }
-    getPaymentMethods() {
+    get PaymentMethods() {
         return this.#paymentMethods;
     }
-    getItens() {
+    get Itens() {
         return this.#savedItens;
     }
     adjustValue(totalValue, method) {
         switch (method) {
-            case this.getPaymentMethods().credito:
-                totalValue += totalValue * (3 / 100);
+            case this.PaymentMethods.credito:
+                totalValue += totalValue * 0.03;
                 break;
-            case this.getPaymentMethods().dinheiro:
+            case this.PaymentMethods.dinheiro:
                 totalValue -= totalValue * 0.05;
                 break;
         }
