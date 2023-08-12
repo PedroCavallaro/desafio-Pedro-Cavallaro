@@ -16,45 +16,49 @@ class CaixaDaLanchonete {
         new Product("combo2", "1 Café e 1 Sanduíche ", 7.5, ""),
     ];
     calcularValorDaCompra(metodoDePagamento, itens) {
-        if (!metodoDePagamento) return "Método de pagamento necessário";
-        if (!(metodoDePagamento in this.getPaymentMethods()))
-            return "Forma de pagamento inválida!";
-        if (!itens.length) return "Não há itens no carrinho de compra!";
+        try {
+            if (!metodoDePagamento)
+                throw new Error("Método de pagamento necessário");
+            if (!(metodoDePagamento in this.getPaymentMethods()))
+                throw new Error("Forma de pagamento inválida!");
+            if (!itens.length)
+                throw new Error("Não há itens no carrinho de compra!");
 
-        let message = "";
-        let totalValue = 0;
-        const buy = Array.from(itens, (item) => {
-            const qtd = Number(item.split(",")[1]);
-            const codItem = item.split(",")[0];
+            let totalValue = 0;
+            const buy = Array.from(itens, (item) => {
+                const qtd = Number(item.split(",")[1]);
+                const codItem = item.split(",")[0];
 
-            const retrievedItem = this.getItens().find(
-                (e) => e.cod === codItem
-            );
+                const retrievedItem = this.getItens().find(
+                    (e) => e.cod === codItem
+                );
 
-            if (qtd === 0) message = "Quantidade inválida!";
-            if (!retrievedItem) message = "Item inválido!";
+                if (qtd === 0) throw new Error("Quantidade inválida!");
+                if (!retrievedItem) throw new Error("Item inválido!");
 
-            totalValue += qtd * Number(retrievedItem?.value);
+                totalValue += qtd * Number(retrievedItem?.value);
 
-            return { ...retrievedItem, qtd };
-        });
+                return { ...retrievedItem, qtd };
+            });
 
-        buy.forEach((item) => {
-            if (item.parent) {
-                const isValid = buy.find((e) => e.cod === item.parent);
+            buy.forEach((item) => {
+                if (item.parent) {
+                    const isValid = buy.find((e) => e.cod === item.parent);
 
-                if (!isValid) {
-                    message = "Item extra não pode ser pedido sem o principal";
+                    if (!isValid) {
+                        throw new Error(
+                            "Item extra não pode ser pedido sem o principal"
+                        );
+                    }
                 }
-            }
-        });
+            });
 
-        if (!message) {
-            message = `R$ ${this.adjustValue(totalValue, metodoDePagamento)
+            return `R$ ${this.adjustValue(totalValue, metodoDePagamento)
                 .toFixed(2)
                 .replace(".", ",")}`;
+        } catch (err) {
+            return err.message;
         }
-        return message;
     }
     getPaymentMethods() {
         return this.#paymentMethods;
